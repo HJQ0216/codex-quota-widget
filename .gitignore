@@ -1,0 +1,12 @@
+/lib/
+/runtime/
+/build/
+/dist/
+__pycache__/
+*.py[cod]
+*.log
+*.spec
+/status.json
+/window-state.json
+/render-state.json
+/verification.json
