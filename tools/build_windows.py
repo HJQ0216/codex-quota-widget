@@ -7,6 +7,8 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 BUILD=ROOT/'build'
 DIST=ROOT/'dist'
+if not DIST.resolve().is_relative_to(ROOT.resolve()):
+    raise RuntimeError('Build output must stay inside the project directory.')
 (BUILD/'tmp').mkdir(parents=True,exist_ok=True)
 env=os.environ.copy()
 env.update(TEMP=str(BUILD/'tmp'),TMP=str(BUILD/'tmp'),
@@ -15,7 +17,7 @@ subprocess.check_call([sys.executable,'-B','-m','PyInstaller','--noconfirm','--o
  '--noupx','--name','CodexQuotaWidget','--distpath',str(DIST),'--workpath',str(BUILD/'work'),
  '--specpath',str(BUILD),'--paths',str(ROOT/'lib'),'--copy-metadata','Pillow',str(ROOT/'widget.py')],cwd=ROOT,env=env)
 package=DIST/'CodexQuotaWidget'
-for name in ('README.md','LICENSE','THIRD_PARTY_NOTICES.md'):
+for name in ('README.md','LICENSE','THIRD_PARTY_NOTICES.md','enable-autostart.cmd','disable-autostart.cmd'):
  shutil.copy2(ROOT/name,package/name)
 shutil.copytree(ROOT/'docs'/'images',package/'docs'/'images',dirs_exist_ok=True)
 shutil.copytree(ROOT/'docs'/'licenses',package/'licenses',dirs_exist_ok=True)

@@ -90,7 +90,7 @@ class QuotaClient:
         self.next_id = 0
         threading.Thread(target=self._read, daemon=True).start()
         try:
-            self.rpc('initialize', {'clientInfo': {'name': 'codex_quota_widget', 'version': '0.1.0'},
+            self.rpc('initialize', {'clientInfo': {'name': 'codex_quota_widget', 'version': '0.2.0'},
                                    'capabilities': {'experimentalApi': True}})
             self.send({'method': 'initialized'})
         except Exception:
@@ -228,6 +228,14 @@ class Widget:
         client = None
         try:
             while not self.stop_event.is_set():
+                # 后台等候 Codex；它未打开时不读取凭据或查询额度。
+                if not self.host or not u.IsWindow(self.host):
+                    if client:
+                        client.close()
+                        client = None
+                        self.client = None
+                    self.stop_event.wait(2)
+                    continue
                 self.refresh_event.clear()
                 self.events.put(('busy', None))
                 try:
@@ -394,6 +402,9 @@ class Widget:
 
 
 def main():
+    if sys.argv[1:2] == ['--autostart']:
+        from autostart import main as autostart_main
+        raise SystemExit(autostart_main(sys.argv[2:]))
     try:
         C.WinDLL('shcore').SetProcessDpiAwareness(2)
     except (OSError,AttributeError):

@@ -15,16 +15,34 @@
 - 圆环与文字采用 4 倍超采样和 Lanczos 缩小，减少锯齿与黑边。
 - 每 60 秒查询一次；点击刷新，悬停查看重置时间，右键退出。
 - 跟随 Codex 窗口和显示缩放；切换应用或最小化时隐藏。
-- 不修改 Codex 安装文件、配置或开机启动项。
+- 可选的 Windows 登录自动启动；Codex 未打开时在后台等候，不读取登录凭据或查询额度。
+- 不修改 Codex 安装文件或配置；只有手动开启自动启动时才登记当前用户启动项。
 
 ## 下载运行
 
 1. 安装 Codex Windows 桌面客户端，使用 ChatGPT 账号登录。
-2. 在 [Releases](https://github.com/HJQ0216/codex-quota-widget/releases/latest) 下载 `codex-quota-widget-v0.1.0-windows-x64.zip`。
+2. 在 [Releases](https://github.com/HJQ0216/codex-quota-widget/releases/latest) 下载 `codex-quota-widget-v0.2.0-windows-x64.zip`。
 3. 将整个压缩包解压到可写目录，双击 `CodexQuotaWidget.exe`。便携包自带 Python 运行时，无需单独安装 Python。
 4. 切回 Codex，在左下角头像上方查看圆环。右键圆环可退出。
 
 不要只移动 `.exe`：旁边的 `_internal` 文件夹也是程序的一部分。
+
+## 随 Codex 自动出现（v0.2.0）
+
+程序默认不创建 Windows 启动项。需要自动出现时：
+
+1. 将程序放在固定的可写目录。
+2. 双击 `enable-autostart.cmd`，登记当前用户的登录启动项并启动组件。
+3. 以后正常使用原来的入口打开 Codex，后台组件就会显示；Codex 关闭后隐藏并暂停额度查询。
+
+Windows 可能延迟运行登录启动项。若刚登录时没有立即出现，可手动运行组件一次。
+便携包的开启/关闭脚本直接调用 EXE，不要求另外安装 Python；源码版使用本机 Python。
+
+撤销时双击 `disable-autostart.cmd`，删除本组件的启动记录或恢复启用前的原值；当前运行的组件可右键退出。
+原值只保存在本机 `runtime/autostart-backup.json`，不随发布包分发。
+若启动记录已被另一份安装修改，撤销操作会保留现有记录并报错，避免覆盖外部更改。
+
+启用后请不要移动安装目录；移动后应先在原目录撤销，再从新目录重新开启。
 
 ## 从源码运行
 
@@ -69,12 +87,13 @@ cd codex-quota-widget
 
 ```powershell
 python -B tools\verify.py
+python -B tools\verify_autostart.py
 python -B tools\render_preview.py
 python -B -m pip install pyinstaller==6.22.3
 python -B tools\build_windows.py
 ```
 
-验证包含额度解析、32 组 DPI/主题/状态组合、文字边界、半透明边缘和 Windows 原生透明合成。输出放在忽略的 `build/` 或 `dist/` 中；不会读取真实账号数据来制作效果图。
+验证包含可选启动项的启用/恢复与路径处理、Codex 缺席时暂停查询、32 组 DPI/主题/状态组合、文字边界、半透明边缘和 Windows 原生透明合成。输出放在忽略的 `build/` 或 `dist/` 中；不会读取真实账号数据来制作效果图。
 
 源码入口是 `widget.py`，抗锯齿与 Windows 透明绘制在 `rendering.py`。
 
